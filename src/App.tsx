@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppProvider, useApp } from './context/SupabaseAppContext';
+import { CurrencyProvider } from './context/CurrencyContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LoadingSpinner } from './components/ui/LoadingComponents';
 import { LoginPage } from './components/auth/LoginPage';
@@ -117,7 +118,9 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <AppProvider>
-          <AppContent />
+          <CurrencyProvider>
+            <AppContent />
+          </CurrencyProvider>
         </AppProvider>
       </AuthProvider>
     </ThemeProvider>

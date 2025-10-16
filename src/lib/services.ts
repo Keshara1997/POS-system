@@ -529,13 +529,17 @@ export const settingsService = {
       storeEmail: data.store_email || '',
       storeLogo: data.store_logo || undefined,
       taxRate: data.tax_rate || 0,
-      currency: data.currency || 'LKR',
+      currency: data.currency || 'USD',
+      baseCurrency: data.base_currency || 'USD',
       interfaceMode: data.interface_mode as any || 'touch',
       autoBackup: data.auto_backup ?? true,
       receiptPrinter: data.receipt_printer ?? true,
       theme: data.theme as any || 'light',
       invoicePrefix: data.invoice_prefix || 'INV',
-      invoiceCounter: data.invoice_counter || 1000
+      invoiceCounter: data.invoice_counter || 1000,
+      exchangeRateProvider: data.exchange_rate_provider as any || 'exchangerate',
+      exchangeRateApiKey: data.exchange_rate_api_key || undefined,
+      exchangeRateUpdateInterval: data.exchange_rate_update_interval || 60
     }
   },
 
@@ -560,12 +564,16 @@ export const settingsService = {
         store_logo: settings.storeLogo,
         tax_rate: settings.taxRate,
         currency: settings.currency,
+        base_currency: settings.baseCurrency,
         interface_mode: settings.interfaceMode,
         auto_backup: settings.autoBackup,
         receipt_printer: settings.receiptPrinter,
         theme: settings.theme,
         invoice_prefix: settings.invoicePrefix,
-        invoice_counter: settings.invoiceCounter
+        invoice_counter: settings.invoiceCounter,
+        exchange_rate_provider: settings.exchangeRateProvider,
+        exchange_rate_api_key: settings.exchangeRateApiKey,
+        exchange_rate_update_interval: settings.exchangeRateUpdateInterval
       })
       .eq('id', existingData.id)
       .select()
@@ -580,13 +588,17 @@ export const settingsService = {
       storeEmail: data.store_email || '',
       storeLogo: data.store_logo || undefined,
       taxRate: data.tax_rate || 0,
-      currency: data.currency || 'LKR',
+      currency: data.currency || 'USD',
+      baseCurrency: data.base_currency || 'USD',
       interfaceMode: data.interface_mode as any || 'touch',
       autoBackup: data.auto_backup ?? true,
       receiptPrinter: data.receipt_printer ?? true,
       theme: data.theme as any || 'light',
       invoicePrefix: data.invoice_prefix || 'INV',
-      invoiceCounter: data.invoice_counter || 1000
+      invoiceCounter: data.invoice_counter || 1000,
+      exchangeRateProvider: data.exchange_rate_provider as any || 'exchangerate',
+      exchangeRateApiKey: data.exchange_rate_api_key || undefined,
+      exchangeRateUpdateInterval: data.exchange_rate_update_interval || 60
     }
   }
 }

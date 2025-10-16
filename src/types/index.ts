@@ -156,15 +156,74 @@ export interface AppSettings {
   storeLogo?: string;
   taxRate: number;
   currency: string;
+  baseCurrency: string; // Base currency for pricing
   interfaceMode: 'touch' | 'traditional';
   autoBackup: boolean;
   receiptPrinter: boolean;
   theme: 'light' | 'dark' | 'auto';
   invoicePrefix: string;
   invoiceCounter: number;
+  exchangeRateProvider?: 'fixer' | 'currencylayer' | 'exchangerate' | 'manual';
+  exchangeRateApiKey?: string;
+  exchangeRateUpdateInterval?: number; // in minutes
 }
 
 export interface LoginCredentials {
   username: string;
   password: string;
+}
+
+// Currency-related interfaces
+export interface CurrencyConfig {
+  id: string;
+  code: string;
+  name: string;
+  symbol: string;
+  symbolPosition: 'before' | 'after';
+  decimalPlaces: number;
+  isActive: boolean;
+  isBaseCurrency: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ExchangeRate {
+  id: string;
+  baseCurrency: string;
+  targetCurrency: string;
+  rate: number;
+  source: 'api' | 'manual' | 'fallback';
+  isManualOverride: boolean;
+  effectiveFrom: Date;
+  effectiveTo?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ExchangeRateHistory {
+  id: string;
+  baseCurrency: string;
+  targetCurrency: string;
+  rate: number;
+  previousRate?: number;
+  changePercentage?: number;
+  source: 'api' | 'manual' | 'fallback';
+  isManualOverride: boolean;
+  recordedAt: Date;
+}
+
+export interface CurrencyConversion {
+  originalAmount: number;
+  convertedAmount: number;
+  fromCurrency: string;
+  toCurrency: string;
+  exchangeRate: number;
+  timestamp: Date;
+}
+
+// Enhanced Sale interface with currency support
+export interface SaleWithCurrency extends Sale {
+  transactionCurrency: string;
+  baseCurrencyAmount?: number;
+  exchangeRateUsed?: number;
 }
