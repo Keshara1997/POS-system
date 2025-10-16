@@ -12,8 +12,12 @@ export interface Database {
       app_settings: {
         Row: {
           auto_backup: boolean | null
+          base_currency: string | null
           created_at: string | null
           currency: string | null
+          exchange_rate_api_key: string | null
+          exchange_rate_provider: string | null
+          exchange_rate_update_interval: number | null
           id: string
           interface_mode: string | null
           invoice_counter: number | null
@@ -30,8 +34,12 @@ export interface Database {
         }
         Insert: {
           auto_backup?: boolean | null
+          base_currency?: string | null
           created_at?: string | null
           currency?: string | null
+          exchange_rate_api_key?: string | null
+          exchange_rate_provider?: string | null
+          exchange_rate_update_interval?: number | null
           id?: string
           interface_mode?: string | null
           invoice_counter?: number | null
@@ -48,8 +56,12 @@ export interface Database {
         }
         Update: {
           auto_backup?: boolean | null
+          base_currency?: string | null
           created_at?: string | null
           currency?: string | null
+          exchange_rate_api_key?: string | null
+          exchange_rate_provider?: string | null
+          exchange_rate_update_interval?: number | null
           id?: string
           interface_mode?: string | null
           invoice_counter?: number | null
@@ -509,6 +521,120 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
+      }
+      currency_config: {
+        Row: {
+          id: string
+          code: string
+          name: string
+          symbol: string
+          symbol_position: string
+          decimal_places: number
+          is_active: boolean
+          is_base_currency: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          name: string
+          symbol: string
+          symbol_position?: string
+          decimal_places?: number
+          is_active?: boolean
+          is_base_currency?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          code?: string
+          name?: string
+          symbol?: string
+          symbol_position?: string
+          decimal_places?: number
+          is_active?: boolean
+          is_base_currency?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      exchange_rates: {
+        Row: {
+          id: string
+          base_currency: string
+          target_currency: string
+          rate: number
+          source: string
+          is_manual_override: boolean
+          effective_from: string
+          effective_to: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          base_currency: string
+          target_currency: string
+          rate: number
+          source?: string
+          is_manual_override?: boolean
+          effective_from?: string
+          effective_to?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          base_currency?: string
+          target_currency?: string
+          rate?: number
+          source?: string
+          is_manual_override?: boolean
+          effective_from?: string
+          effective_to?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      exchange_rate_history: {
+        Row: {
+          id: string
+          base_currency: string
+          target_currency: string
+          rate: number
+          previous_rate: number | null
+          change_percentage: number | null
+          source: string
+          is_manual_override: boolean
+          recorded_at: string
+        }
+        Insert: {
+          id?: string
+          base_currency: string
+          target_currency: string
+          rate: number
+          previous_rate?: number | null
+          change_percentage?: number | null
+          source?: string
+          is_manual_override?: boolean
+          recorded_at?: string
+        }
+        Update: {
+          id?: string
+          base_currency?: string
+          target_currency?: string
+          rate?: number
+          previous_rate?: number | null
+          change_percentage?: number | null
+          source?: string
+          is_manual_override?: boolean
+          recorded_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
