@@ -192,13 +192,142 @@ The system uses Supabase with the following main tables:
 - Safari (latest)
 - Edge (latest)
 
+## 🌿 Branch Management
+
+This project follows a structured branching strategy to ensure organized development and deployment:
+
+### Branch Structure
+
+- **`main`** - Production-ready code, always stable and deployable
+- **`develop`** - Integration branch for features, staging environment
+- **`feature/*`** - Feature development branches (e.g., `feature/user-authentication`)
+- **`bugfix/*`** - Bug fix branches (e.g., `bugfix/inventory-calculation`)
+- **`hotfix/*`** - Critical production fixes (e.g., `hotfix/security-patch`)
+- **`release/*`** - Release preparation branches (e.g., `release/v1.1.0`)
+
+### Branch Naming Conventions
+
+- **Features**: `feature/description-of-feature`
+- **Bug fixes**: `bugfix/issue-description`
+- **Hotfixes**: `hotfix/critical-issue`
+- **Releases**: `release/version-number`
+- **Documentation**: `docs/update-description`
+
+### Workflow
+
+1. **Feature Development**
+
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/your-feature-name
+   # Make your changes
+   git push origin feature/your-feature-name
+   ```
+
+2. **Bug Fixes**
+
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b bugfix/issue-description
+   # Fix the issue
+   git push origin bugfix/issue-description
+   ```
+
+3. **Hotfixes** (for critical production issues)
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b hotfix/critical-issue
+   # Fix the critical issue
+   git push origin hotfix/critical-issue
+   ```
+
+## 🍴 Git Repository Fork
+
+### Forking the Repository
+
+To contribute to this project, you'll need to fork the repository:
+
+1. **Fork on GitHub**
+
+   - Go to the [repository page](https://github.com/Keshara1997/POS-system)
+   - Click the "Fork" button in the top-right corner
+   - Choose your account to fork to
+
+2. **Clone Your Fork**
+
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/POS-system.git
+   cd POS-system
+   ```
+
+3. **Add Upstream Remote**
+
+   ```bash
+   git remote add upstream https://github.com/Keshara1997/POS-system.git
+   ```
+
+4. **Keep Your Fork Updated**
+   ```bash
+   git fetch upstream
+   git checkout main
+   git merge upstream/main
+   git push origin main
+   ```
+
+### Working with Forks
+
+- **Sync with upstream**: Regularly pull changes from the main repository
+- **Create branches**: Always work on feature branches, never directly on main
+- **Submit PRs**: Create pull requests from your fork to the main repository
+- **Stay updated**: Keep your fork synchronized with the upstream repository
+
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Getting Started
+
+1. **Fork the repository** (see [Git Repository Fork](#-git-repository-fork) section above)
+2. **Clone your fork** and set up the development environment
+3. **Create a feature branch** following our [branch naming conventions](#branch-naming-conventions)
+4. **Make your changes** and test thoroughly
+5. **Commit your changes** with descriptive commit messages
+6. **Push to your fork** and create a Pull Request
+
+### Pull Request Process
+
+1. **Create a Pull Request** from your feature branch to `develop`
+2. **Fill out the PR template** with:
+
+   - Description of changes
+   - Screenshots (if applicable)
+   - Testing instructions
+   - Related issues (if any)
+
+3. **Code Review** - Maintainers will review your code
+4. **Address feedback** - Make requested changes
+5. **Merge** - Once approved, your changes will be merged
+
+### Commit Message Guidelines
+
+Use conventional commit format:
+
+- `feat:` - New features
+- `fix:` - Bug fixes
+- `docs:` - Documentation changes
+- `style:` - Code style changes
+- `refactor:` - Code refactoring
+- `test:` - Adding or updating tests
+- `chore:` - Maintenance tasks
+
+Example:
+
+```bash
+git commit -m "feat: add user authentication system"
+git commit -m "fix: resolve inventory calculation bug"
+git commit -m "docs: update API documentation"
+```
 
 ## 📄 License
 
