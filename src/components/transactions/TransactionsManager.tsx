@@ -32,7 +32,9 @@ export function TransactionsManager() {
       // Handle draft status filter
       const saleStatus = isDraftSale(sale) ? 'draft' : sale.status;
       const matchesStatus = statusFilter === 'all' || saleStatus === statusFilter;
-      const matchesPayment = paymentFilter === 'all' || sale.paymentMethod === paymentFilter;
+      const matchesPayment = paymentFilter === 'all' ||
+        sale.paymentMethod === paymentFilter ||
+        (sale.payments && sale.payments.some(p => p.method === paymentFilter));
       
       let matchesDate = true;
       if (dateFilter !== 'all') {
@@ -284,12 +286,18 @@ export function TransactionsManager() {
                       {state.settings.currency} {transaction.total.toFixed(2)}
                     </div>
                   </td>
-                  <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center space-x-2">
-                      {getPaymentIcon(transaction.paymentMethod)}
-                      <span className="text-sm text-gray-900 capitalize">{transaction.paymentMethod}</span>
-                    </div>
-                  </td>
+                              <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center space-x-2">
+                                  {getPaymentIcon(transaction.paymentMethod)}
+                                  {transaction.payments && transaction.payments.length > 0 ? (
+                                    <span className="text-sm text-gray-900">
+                                      {transaction.payments.map(p => `${p.method} ${state.settings.currency} ${p.amount.toFixed(2)}`).join(' | ')}
+                                    </span>
+                                  ) : (
+                                    <span className="text-sm text-gray-900 capitalize">{transaction.paymentMethod}</span>
+                                  )}
+                                </div>
+                              </td>
                   <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(isDraftSale(transaction) ? 'draft' : transaction.status)}`}>
                       {isDraftSale(transaction) ? 'draft' : transaction.status}
