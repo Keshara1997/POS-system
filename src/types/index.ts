@@ -238,3 +238,112 @@ export interface SaleWithCurrency extends Sale {
   baseCurrencyAmount?: number;
   exchangeRateUsed?: number;
 }
+
+// Inventory Alert System Types
+export interface AlertRecipient {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  role: 'admin' | 'manager' | 'cashier';
+  alertTypes: AlertType[];
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AlertTemplate {
+  id: string;
+  name: string;
+  type: AlertType;
+  channel: 'email' | 'sms' | 'both';
+  subject?: string;
+  body: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AlertConfiguration {
+  id: string;
+  alertType: AlertType;
+  isEnabled: boolean;
+  thresholdValue?: number; // percentage of min_stock for low_stock alerts
+  checkFrequencyMinutes: number;
+  cooldownMinutes: number;
+  emailTemplateId?: string;
+  smsTemplateId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AlertHistory {
+  id: string;
+  alertType: AlertType;
+  productId: string;
+  productName: string;
+  productSku: string;
+  currentStock: number;
+  minStock: number;
+  thresholdValue?: number;
+  recipientId: string;
+  recipientName: string;
+  recipientEmail?: string;
+  recipientPhone?: string;
+  channel: 'email' | 'sms';
+  status: 'pending' | 'sent' | 'failed' | 'delivered';
+  templateId?: string;
+  messageContent?: string;
+  errorMessage?: string;
+  sentAt?: Date;
+  deliveredAt?: Date;
+  createdAt: Date;
+}
+
+export interface AlertSchedule {
+  id: string;
+  alertType: AlertType;
+  isActive: boolean;
+  lastRun?: Date;
+  nextRun?: Date;
+  runCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface NotificationServiceConfig {
+  id: string;
+  serviceName: string; // sendgrid, twilio, aws_ses, etc.
+  serviceType: 'email' | 'sms' | 'both';
+  configData: Record<string, any>; // API keys, endpoints, etc.
+  isActive: boolean;
+  isDefault: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type AlertType = 'low_stock' | 'out_of_stock' | 'reorder' | 'expiry_warning' | 'batch_expiry';
+
+export interface InventoryAlert {
+  alertType: AlertType;
+  productId: string;
+  productName: string;
+  productSku: string;
+  currentStock: number;
+  minStock: number;
+  thresholdValue?: number;
+}
+
+export interface AlertContext {
+  product: Product;
+  recipient: AlertRecipient;
+  template: AlertTemplate;
+  configuration: AlertConfiguration;
+}
+
+export interface ProcessedAlert {
+  alert: InventoryAlert;
+  recipients: AlertRecipient[];
+  shouldSend: boolean;
+  reason?: string;
+}
