@@ -151,6 +151,22 @@ src/
 - Process transactions
 - View basic product information
 
+
+## 🔑 Test User Credentials
+
+For testing purposes, you can use the following user credentials:
+
+**Admin User:**
+
+- **URL:** `https://possystemtest.netlify.app/`
+- **Email:** `inctimo.pvt.ltd@gmail.com`
+- **Password:** `inctimo`
+- **Role:** Admin (Full system access)
+- **Username:** `inctimo`
+
+> **Note:** This user has full administrative privileges and can access all features of the POS system including user management, reports, and system settings.
+
+
 ## 🔧 Available Scripts
 
 - `npm run dev` - Start development server
