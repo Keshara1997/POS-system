@@ -100,6 +100,14 @@ export interface CardDetails {
   holderName: string;
 }
 
+export interface Payment {
+  id: string;
+  method: 'cash' | 'card' | 'digital' | 'credit';
+  amount: number;
+  cardDetails?: CardDetails;
+  notes?: string;
+}
+
 export interface Sale {
   id: string;
   invoiceNumber: string;
@@ -110,7 +118,10 @@ export interface Sale {
   discountAmount: number;
   taxAmount: number;
   total: number;
-  paymentMethod: 'cash' | 'card' | 'digital' | 'credit';
+  // allow split payments; keep legacy single-method field
+  paymentMethod: 'cash' | 'card' | 'digital' | 'credit' | 'split';
+  // when split payments used, payments contains breakdown
+  payments?: Payment[];
   cardDetails?: CardDetails;
   status: 'pending' | 'completed' | 'refunded' | 'credit' | 'draft';
   cashier: string;

@@ -150,10 +150,28 @@ export function ReceiptPrint({ sale, onClose }: ReceiptPrintProps) {
               <span>Total:</span>
               <span>{state.settings.currency} {sale.total.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-sm mt-2">
-              <span>Payment Method:</span>
-              <span className="capitalize">{sale.paymentMethod}</span>
-            </div>
+            {/* Payment breakdown: show individual payments if present */}
+            {sale.payments && sale.payments.length > 0 ? (
+              <div className="mt-2">
+                <h4 className="text-sm font-medium">Payments</h4>
+                <div className="mt-1 space-y-1">
+                  {sale.payments.map((p, i) => (
+                    <div key={p.id ?? i} className="flex justify-between text-sm">
+                      <div>
+                        <span className="font-medium capitalize">{p.method}</span>
+                        {p.cardDetails && <span className="ml-2 text-xs text-gray-600">({p.cardDetails.cardType} ••••{p.cardDetails.lastFourDigits})</span>}
+                      </div>
+                      <div>{state.settings.currency} {p.amount.toFixed(2)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-between text-sm mt-2">
+                <span>Payment Method:</span>
+                <span className="capitalize">{sale.paymentMethod}</span>
+              </div>
+            )}
           </div>
 
           <div className="text-center mt-6 pt-4 border-t border-gray-300">

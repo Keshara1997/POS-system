@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, CreditCard, Banknote, Smartphone, Check, Receipt, AlertCircle, Gift } from 'lucide-react';
-import { Sale, CardDetails, AppliedDiscount, CartItem } from '../../types';
+import { Sale, CardDetails, AppliedDiscount, CartItem, Payment } from '../../types';
 import { useApp, checkDiscountEligibility, useInvoiceGeneration } from '../../context/SupabaseAppContext';
 import { useAuth } from '../../context/AuthContext';
 import { ReceiptPrint } from './ReceiptPrint';
@@ -19,6 +19,8 @@ export function CheckoutModal({ isOpen, onClose, onComplete }: CheckoutModalProp
   const generateInvoice = useInvoiceGeneration();
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [amountPaid, setAmountPaid] = useState('');
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [pendingPayment, setPendingPayment] = useState<{ method: Payment['method']; amount: string }>({ method: 'cash', amount: '' });
   const [isProcessing, setIsProcessing] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [completedSale, setCompletedSale] = useState<Sale | null>(null);
@@ -137,6 +139,8 @@ export function CheckoutModal({ isOpen, onClose, onComplete }: CheckoutModalProp
       setCreditNotes('');
       setShowDiscountAlert(false);
       setPaymentMethod('cash');
+      setPayments([]);
+      setPendingPayment({ method: 'cash', amount: '' });
       setCardDetails({
         bankName: '',
         cardType: 'unknown',
@@ -225,6 +229,9 @@ export function CheckoutModal({ isOpen, onClose, onComplete }: CheckoutModalProp
   const total = subtotal - totalDiscount + taxAmount;
   const change = parseFloat(amountPaid) - total;
 
+  const paidSoFar = payments.reduce((s, p) => s + p.amount, 0);
+  const remaining = Math.max(0, total - paidSoFar);
+
   // Check if customer has enough credit limit for credit payment
   const canPayWithCredit = state.selectedCustomer && 
     (state.selectedCustomer.creditLimit - state.selectedCustomer.creditUsed) >= total;
@@ -232,7 +239,12 @@ export function CheckoutModal({ isOpen, onClose, onComplete }: CheckoutModalProp
   // Check if payment can be processed
   const canProcessPayment = () => {
     if (isProcessing) return false;
-    
+    // If there are split payments, require that payments equal total
+    if (payments.length > 0) {
+      const sum = payments.reduce((s, p) => s + p.amount, 0);
+      return Math.abs(sum - total) < 0.01;
+    }
+
     switch (paymentMethod) {
       case 'cash':
         return amountPaid && parseFloat(amountPaid) >= total;
@@ -252,6 +264,37 @@ export function CheckoutModal({ isOpen, onClose, onComplete }: CheckoutModalProp
     }
   };
 
+  const addPendingPayment = () => {
+    const amt = parseFloat(pendingPayment.amount || '0');
+    if (!amt || amt <= 0) {
+      swalConfig.warning('Enter a valid payment amount');
+      return;
+    }
+    if (amt > remaining) {
+      swalConfig.warning('Payment exceeds remaining balance');
+      return;
+    }
+    const newPayment: Payment = {
+      id: Date.now().toString(),
+      method: pendingPayment.method,
+      amount: amt,
+      cardDetails: pendingPayment.method === 'card' ? {
+        id: Date.now().toString(),
+        bankName: cardDetails.bankName || '',
+        cardType: cardDetails.cardType || 'unknown',
+        cardNumber: cardDetails.cardNumber || '',
+        lastFourDigits: cardDetails.lastFourDigits || '',
+        holderName: cardDetails.holderName || ''
+      } : undefined
+    };
+    setPayments(prev => [...prev, newPayment]);
+    setPendingPayment({ ...pendingPayment, amount: '' });
+  };
+
+  const removePayment = (id: string) => {
+    setPayments(prev => prev.filter(p => p.id !== id));
+  };
+
   // Don't render anything if modal is not open and no receipt to show
   if (!isOpen && !showReceipt) return null;
 
@@ -259,11 +302,32 @@ export function CheckoutModal({ isOpen, onClose, onComplete }: CheckoutModalProp
     setIsProcessing(true);
     
     try {
+      // If there's a pending split amount entered but not added, warn user
+      if (pendingPayment.amount && parseFloat(pendingPayment.amount) > 0) {
+        const res = await swalConfig.confirm('Unadded Payment', 'You have entered a payment amount but not added it to the split list. Add now?', 'Add');
+        if (res.isConfirmed) {
+          addPendingPayment();
+          // small delay to allow state update
+          await new Promise(r => setTimeout(r, 200));
+        } else {
+          setIsProcessing(false);
+          return;
+        }
+      }
+
       // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const invoiceNumber = await generateInvoice();
-      
+
+      // Build payments: if split used, use payments state, otherwise build from single method
+      const salePayments: Payment[] = payments.length > 0 ? payments : [{
+        id: Date.now().toString(),
+        method: paymentMethod as Payment['method'],
+        amount: paymentMethod === 'cash' ? parseFloat(amountPaid || '0') : total,
+        cardDetails: paymentMethod === 'card' ? { ...cardDetails as CardDetails, id: Date.now().toString() } : undefined
+      }];
+
       const sale: Sale = {
         id: Date.now().toString(),
         invoiceNumber,
@@ -274,12 +338,10 @@ export function CheckoutModal({ isOpen, onClose, onComplete }: CheckoutModalProp
         discountAmount: totalDiscount,
         taxAmount,
         total,
-        paymentMethod: paymentMethod as 'cash' | 'card' | 'digital' | 'credit',
-        cardDetails: paymentMethod === 'card' ? {
-          ...cardDetails as CardDetails,
-          id: Date.now().toString()
-        } : undefined,
-        status: paymentMethod === 'credit' ? 'credit' : 'completed',
+        paymentMethod: salePayments.length > 1 ? 'split' : salePayments[0].method,
+        payments: salePayments,
+        cardDetails: salePayments.length === 1 ? salePayments[0].cardDetails : undefined,
+        status: salePayments.some(p => p.method === 'credit') ? 'credit' : 'completed',
         cashier: user?.user_metadata?.full_name || user?.email || 'Unknown',
         timestamp: new Date(),
         receiptNumber: invoiceNumber,
@@ -498,6 +560,51 @@ export function CheckoutModal({ isOpen, onClose, onComplete }: CheckoutModalProp
                       </span>
                     </button>
                   ))}
+                </div>
+
+                {/* Split Payments controls */}
+                <div className="mt-4">
+                  <h4 className="font-semibold">Split Payments</h4>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <select
+                      value={pendingPayment.method}
+                      onChange={(e) => setPendingPayment(prev => ({ ...prev, method: e.target.value as any }))}
+                      className="select"
+                    >
+                      <option value="cash">Cash</option>
+                      <option value="card">Card</option>
+                      <option value="digital">Digital</option>
+                      <option value="credit">Credit</option>
+                    </select>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="input"
+                      placeholder="Amount"
+                      value={pendingPayment.amount}
+                      onChange={(e) => setPendingPayment(prev => ({ ...prev, amount: e.target.value }))}
+                    />
+                    <button type="button" className="btn btn-primary" onClick={addPendingPayment}>Add</button>
+                  </div>
+
+                  <div className="mt-3 space-y-2">
+                    {payments.map(p => (
+                      <div key={p.id} className="flex justify-between items-center p-2 border rounded">
+                        <div>
+                          <div className="font-medium">{p.method.toUpperCase()}</div>
+                          <div className="text-sm text-gray-600">{p.cardDetails ? `${p.cardDetails.cardType} ••••${p.cardDetails.lastFourDigits}` : ''}</div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="font-semibold">{state.settings.currency} {p.amount.toFixed(2)}</div>
+                          <button onClick={() => removePayment(p.id)} className="text-red-600">Remove</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-2 text-sm">
+                    <div>Remaining: <span className="font-semibold">{state.settings.currency} {remaining.toFixed(2)}</span></div>
+                  </div>
                 </div>
 
                 {/* Credit Payment Warning */}

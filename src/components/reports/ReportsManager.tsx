@@ -211,11 +211,20 @@ export function ReportsManager() {
     let fileName = '';
 
     if (reportType === 'sales') {
-      csvHeader = 'Date,Invoice Number,Customer,Items,Total,Discount,Cashier\n';
+      csvHeader = 'Date,Invoice Number,Customer,Items,Total,Discount,Payments,Cashier\n';
       csvData = filteredSales.map(sale => {
         const customerName = sale.customerId ? state.customers.find(c => c.id === sale.customerId)?.name || 'Walk-in Customer' : 'Walk-in Customer';
         const itemCount = sale.items.length;
-        return `${format(new Date(sale.timestamp), 'yyyy-MM-dd HH:mm:ss')},${sale.invoiceNumber},${customerName},${itemCount},${sale.total.toFixed(2)},${sale.discountAmount.toFixed(2)},${sale.cashier}`;
+        // Build payments string - prefer payments breakdown if available
+        let paymentsStr = '';
+        if (sale.payments && sale.payments.length > 0) {
+          paymentsStr = sale.payments.map(p => `${p.method}:${p.amount.toFixed(2)}`).join(';');
+        } else {
+          paymentsStr = `${sale.paymentMethod}:${sale.total.toFixed(2)}`;
+        }
+        // Escape commas in customer name
+        const safeCustomer = customerName.replace(/,/g, ' ');
+        return `${format(new Date(sale.timestamp), 'yyyy-MM-dd HH:mm:ss')},${sale.invoiceNumber},${safeCustomer},${itemCount},${sale.total.toFixed(2)},${sale.discountAmount.toFixed(2)},"${paymentsStr}",${sale.cashier}`;
       }).join('\n');
       fileName = `pos-sales-report-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     } else if (reportType === 'customers') {
